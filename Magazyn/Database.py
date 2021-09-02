@@ -1,5 +1,6 @@
 import sqlite3
 from collections import Counter
+from typing import Union, Any
 from dataclasses import dataclass
 
 class database:
@@ -18,7 +19,7 @@ class database:
         self.cursor.execute(query)
         self.conn.commit()
 
-    def add(self, lista):
+    def add(self, lista: list[Union[str, int, Any]]) -> None:
         for item in lista:
             query = f"""INSERT OR REPLACE INTO {self.name_tabel} (name, scales, unit, price) 
                 VALUES ('{item[0]}', '{item[1]}', '{item[2]}','{item[3]}')"""
@@ -29,12 +30,11 @@ class database:
     def dowlaod_all(self):
         # self.cursor.fetchone() pojedyńczy wynik
         resultat = self.cursor.execute(f'SELECT * FROM {self.name_tabel}')
+        print(resultat)
         for item in resultat:
-            # item # tupla  trzy elementowa
             self.dictionary_with_weight[item[1]] = item[2]
             self.dictionary_with_unit[item[1]] = item[3]
             self.price_dictionary[item[1]] = item[4]
-
 
     def order_add(self, name_user: str, email_user: str, order: dict[str, dict[str, str]]) -> None:
         for key in order.keys():
@@ -81,7 +81,7 @@ class database:
         print(self.dictionary_with_weight)
         return self.dictionary_with_weight[name]
 
-    def DownloadOrderData(self):
+    def DownloadOrderData(self) -> list[str]:
         lista_id = []
         self.cursor.execute(f'SELECT * FROM orders')
         resultat = self.cursor.fetchall()
@@ -93,13 +93,36 @@ class database:
         lista_id = list(set(lista_id))
         return lista_id
 
-    def DownloadOrderData_One_ID(self, id: str):
+    def DownloadOrderData_One_ID(self, id: str) -> Counter[str, int]:
         order = Counter()
         self.cursor.execute(f"SELECT * FROM orders WHERE id = '{id}'")
         resultat = self.cursor.fetchall()
         for item in resultat:
             order[item[2]] = item[3]
         return order
+
+    def DownloadOrderData_One_Name(self, name: str) -> tuple[str, int, Any]:
+        self.cursor.execute(f"SELECT * FROM {self.name_tabel} WHERE name = '{name}'")
+        resultat = self.cursor.fetchall()[0]
+        return resultat
+
+    def UpdeteProduct(self, name: str, weight: float, unit: str, price: float, name_chane: str) -> None:
+        query = f"UPDATE {self.name_tabel} SET name = '{name}', scales = '{weight}'" \
+                f", unit = '{unit}', price = '{price}'  WHERE name = '{name_chane}'"
+        print(query)
+        self.cursor.execute(query)
+        self.conn.commit()
+        self.conn.close()
+        self.conn = sqlite3.connect('goods.db')
+        self.cursor = self.conn.cursor()
+    def GetProductNnames(self):
+        Resultat = []
+        self.cursor.execute(f'SELECT name FROM {self.name_tabel}')
+        resultat = self.cursor.fetchall()
+        for item in resultat:
+            Resultat.append(item[0])
+        return Resultat
+
 if __name__ == '__main__':
     db = database()
     # db.CreatingTabels()

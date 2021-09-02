@@ -59,7 +59,6 @@ class Widgets(QWidget):
         name = self.entry_name.text()
         email= self.entry_email.text()
         bool = self.CheckingTheEmail(email)
-        print(bool)
         if bool:
             msg.setText("Wysłałem Twoje zamówienie do magazynu")
             self.db.order_add(name, email, order_submit)
@@ -71,7 +70,7 @@ class Widgets(QWidget):
     def Addorder(self):
         msg = QMessageBox()
         self.config(msg, 18)
-        ProductName = self.list_items.selectedItems()[0].text()
+        ProductName = self.list_items.currentText()
         ProductNamber = float(self.entry.text())
         boolen = self.client.BoolenWeight(ProductName, ProductNamber, self.db.returnDICT("weight"))
         if boolen:
@@ -83,7 +82,8 @@ class Widgets(QWidget):
             msg.exec()
 
     def addItem(self):
-        self.list_items =QListWidget()
+        self.db.dowlaod_all()
+        self.list_items =QComboBox()
         self.list_items.addItems(self.db.returnDICT('lista'))
         self.config(self.list_items, 18)
         self.entry = QLineEdit()
@@ -122,7 +122,7 @@ class Widgets(QWidget):
                     self.grid.itemAt(index).widget().deleteLater()
                     index += 1
                 except:
-                    print()
+                    ...
 
     def config(self,widget, point: int, weight: int=50 ):
         font = QFont()

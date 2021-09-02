@@ -84,9 +84,9 @@ class warehouse_staff:
 
 #  pobranie danych o zamówieniach +
 # wysyłanie maili do klientów
-#  dodawanie nowych produktów
-#  dodawanie liczby produktów
-# zmianna cenny
+#  dodawanie nowych produktów +
+#  dodawanie liczby produktów +
+# zmianna cenny +
 
 if __name__ == '__main__':
     warehouse_staff().DownloadOrderData()
