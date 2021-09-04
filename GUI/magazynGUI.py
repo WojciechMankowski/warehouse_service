@@ -1,5 +1,6 @@
 from PySide2.QtWidgets import *
 from PySide2.QtGui import QFont, QIcon
+
 from Magazyn.Database import database
 
 class Widgets(QWidget):
@@ -8,10 +9,8 @@ class Widgets(QWidget):
         super(Widgets, self).__init__()
         self.icon = QIcon('IMG/warehouse.png')
         QMainWindow().setWindowIcon(self.icon)
-        tray = QSystemTrayIcon()
-        tray.setIcon(self.icon)
-        tray.show()
 
+        self.setGeometry(300, 200, 500, 400)
         self.Layout()
         self.setLayout(self.grid)
         self.addButton()
@@ -185,9 +184,39 @@ class Widgets(QWidget):
         btn.clicked.connect(self.Clear)
         btn.clicked.connect(self.EditingProducts)
         self.config(btn, 25, 60)
+        btn_ = QPushButton("Sprawdź stan magazunu")
+        self.config(btn_, 25, 60)
+        btn_.clicked.connect(self.CheckTheStockLevel)
         self.grid.addWidget(btn_add, 1, 1)
+        self.grid.addWidget(btn_, 1, 4)
         self.grid.addWidget(btn_summary, 1, 2)
         self.grid.addWidget(btn, 1, 3)
+
+    def CheckTheStockLevel(self):
+        print("test")
+        resultat = self.db.dowlaod_all()
+        tableWidget = QTableWidget()
+        tableWidget.setRowCount(len(resultat))
+        tableWidget.setColumnCount(4)
+        label_list = ["Nazwa", "Liczebność", "Jednostka", "Cena"]
+        columns = 0
+        for items in label_list:
+            name = QTableWidgetItem(items)
+            tableWidget.setHorizontalHeaderItem(columns, name)
+            columns +=1
+        self.grid.addWidget(tableWidget, 3, 2)
+        row = 1
+        for items in resultat:
+            print(items)
+            name = QTableWidgetItem(str(items[1]))
+            weight = QTableWidgetItem(str(items[2]))
+            unit = QTableWidgetItem(str(items[3]))
+            price = QTableWidgetItem(str(items[4]))
+            tableWidget.setItem(row, 0, name)
+            tableWidget.setItem(row, 1, weight)
+            tableWidget.setItem(row, 2, unit)
+            tableWidget.setItem(row, 3, price)
+            row +=1
 
     def Layout(self):
         self.grid = QGridLayout()

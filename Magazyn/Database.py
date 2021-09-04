@@ -29,17 +29,20 @@ class database:
 
     def dowlaod_all(self):
         # self.cursor.fetchone() pojedyńczy wynik
+        print('db')
+        tuple__ = tuple()
         resultat = self.cursor.execute(f'SELECT * FROM {self.name_tabel}')
-        print(resultat)
         for item in resultat:
+            tuple_ = tuple([item])
+            tuple__ = tuple__ + tuple_
             self.dictionary_with_weight[item[1]] = item[2]
             self.dictionary_with_unit[item[1]] = item[3]
             self.price_dictionary[item[1]] = item[4]
+        return  tuple__
 
     def order_add(self, name_user: str, email_user: str, order: dict[str, dict[str, str]]) -> None:
         for key in order.keys():
             for Key, item in order[key].items():
-                print(Key, item)
                 query = f"""INSERT OR REPLACE INTO orders  
                                 VALUES ('{key}', '{email_user}', '{Key}', '{item}')"""
 
@@ -60,7 +63,6 @@ class database:
     def UPDATE_WEIGHT(self, name: str, weight: int):
         Weight = self._update(name, weight)
         query = f"UPDATE {self.name_tabel} SET scales = '{Weight}'  WHERE name = '{name}'"
-        print(query)
         self.cursor.execute(query)
         self.conn.commit()
 
@@ -76,9 +78,7 @@ class database:
         self.conn.close()
 
     def _update(self, name, weight):
-        print(self.dictionary_with_weight)
         self.dictionary_with_weight.subtract({name: weight})
-        print(self.dictionary_with_weight)
         return self.dictionary_with_weight[name]
 
     def DownloadOrderData(self) -> list[str]:
@@ -86,8 +86,6 @@ class database:
         self.cursor.execute(f'SELECT * FROM orders')
         resultat = self.cursor.fetchall()
         for item in resultat:
-            # print(item[0])
-            # print(not item in lista_id)
             if not item in lista_id:
                 lista_id.append(item[0])
         lista_id = list(set(lista_id))
@@ -109,7 +107,6 @@ class database:
     def UpdeteProduct(self, name: str, weight: float, unit: str, price: float, name_chane: str) -> None:
         query = f"UPDATE {self.name_tabel} SET name = '{name}', scales = '{weight}'" \
                 f", unit = '{unit}', price = '{price}'  WHERE name = '{name_chane}'"
-        print(query)
         self.cursor.execute(query)
         self.conn.commit()
         self.conn.close()
