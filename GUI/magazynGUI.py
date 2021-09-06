@@ -1,63 +1,66 @@
 from PySide2.QtWidgets import *
 from PySide2.QtGui import QFont, QIcon
 
+from GUI.config import CONFIGAPP
+from GUI.mainwindow import Main
 from Magazyn.Database import database
+
 
 class Widgets(QWidget):
 
     def __init__(self):
         super(Widgets, self).__init__()
-        self.icon = QIcon('IMG/warehouse.png')
-        QMainWindow().setWindowIcon(self.icon)
 
         self.setGeometry(300, 200, 500, 400)
         self.Layout()
         self.setLayout(self.grid)
         self.addButton()
-
         self.db = database()
         self.db.dowlaod_all()
+    def addwidget(self, widget, row: int, columns: int) -> None:
+        self.grid.addWidget(widget, row, columns)
 
     def seeItem(self):
         self.Clear()
         id = self.listcombobox.currentText()
         order = self.db.DownloadOrderData_One_ID(id)
-        btn = QPushButton()
-        btn.setText("Zobacz zamówienie")
+        btn = QPushButton("Zobacz zamówienie")
         btn.clicked.connect(self.seeItem)
-        self.grid.addWidget(btn, 3, 2)
+        self.addwidget(btn, 3, 2)
         self.config(btn, 20, 60)
         row = 5
-        label = QLabel()
+        label = QLabel("Zamówienie składa się z: ")
         label_list = QLabel()
-        label.setText("Zamówienie składa się z: ")
         self.config(label, 18)
         self.config(label_list, 18)
-        self.grid.addWidget(label, 4, 2)
+        self.addwidget(label, 4, 2)
         for key, item in order.items():
             txt = f"{key}: {item} {self.db.dictionary_with_unit[key]}."
             label_list.setText(txt)
-            self.grid.addWidget(label_list, row, 2)
+            self.addwidget(label_list, row, 2)
 
     def seeItems(self):
         re  = self.db.DownloadOrderData()
         self.listcombobox = QComboBox()
         self.listcombobox.addItems(re)
-        self.grid.addWidget(self.listcombobox, 2, 2)
 
         btn = QPushButton()
         btn.setText("Zobacz zamówienie")
         btn.clicked.connect(self.seeItem)
-        self.grid.addWidget(btn, 3, 2)
-
+        self.addwidget(self.listcombobox, 2, 2)
+        self.addwidget(btn, 3, 2)
         self.config(btn, 20, 60)
         self.config(self.listcombobox, 19)
 
     def Clear(self):
-        if self.grid.count() > 3:
-            index = 3
+        index = 4
+        print(self.grid.count())
+        if self.grid.count() > 4:
+
+            # self.grid.itemAt(2).layout()
             for i in range(self.grid.count()):
                 try:
+                    print(self.grid.itemAt(index).widget())
                     self.grid.itemAt(index).widget().deleteLater()
                     index += 1
                 except:
@@ -78,6 +81,11 @@ class Widgets(QWidget):
         true_or_false =self.checking()
         msg = QMessageBox()
         product = []
+        resultat = self.db.GetProductNnames()
+        self.listcombobox = QComboBox()
+        self.listcombobox.addItems(resultat)
+        self.addwidget(self.listcombobox, 2, 2)
+        self.config(self.listcombobox, 19)
         if true_or_false:
             product_tupla = self.entry.text(), self.entry_weight.text(), self.entry_unit.text(), self.entry_pents.text()
             product.append(product_tupla)
@@ -93,12 +101,11 @@ class Widgets(QWidget):
         resultat  = self.db.GetProductNnames()
         self.listcombobox = QComboBox()
         self.listcombobox.addItems(resultat)
-        self.grid.addWidget(self.listcombobox, 2, 2)
+        self.addwidget(self.listcombobox, 2, 2)
         self.config(self.listcombobox, 19)
         btn = QPushButton("Edytuj")
         btn.clicked.connect(self.Edit)
-        self.grid.addWidget(btn, 3,2)
-
+        self.addwidget(btn, 3,2)
     def Edit(self):
         self.name = self.listcombobox.currentText()
         resultat = self.db.DownloadOrderData_One_Name(self.name)
@@ -170,15 +177,18 @@ class Widgets(QWidget):
         btn.clicked.connect(self.AddItem)
 
     def addButton(self):
-        btn_add = QPushButton("Zobacz zamówienia")
-        self.config(btn_add, 25, 60)
-        btn_add.clicked.connect(self.Clear)
-        btn_add.clicked.connect(self.seeItems)
+        See_orders = QPushButton("Zobacz zamówienia")
+        self.config(See_orders, 25, 60)
+        See_orders.clicked.connect(self.Clear)
+        See_orders.clicked.connect(self.seeItems)
 
-        btn_summary = QPushButton("Dodawanie produktów")
-        btn_summary.clicked.connect(self.Clear)
-        btn_summary.clicked.connect(self.AddingProducts)
-        self.config(btn_summary, 25, 60)
+        Adding_products = QPushButton("Dodawanie produktów")
+        Adding_products.size().setWidth(1000)
+        Adding_products.setMaximumWidth(1000)
+        print(Adding_products.size().width())
+        Adding_products.clicked.connect(self.Clear)
+        Adding_products.clicked.connect(self.AddingProducts)
+        self.config(Adding_products, 25, 60)
         #
         btn = QPushButton("Edycja produktów")
         btn.clicked.connect(self.Clear)
@@ -186,17 +196,21 @@ class Widgets(QWidget):
         self.config(btn, 25, 60)
         btn_ = QPushButton("Sprawdź stan magazunu")
         self.config(btn_, 25, 60)
+        btn_.clicked.connect(self.Clear)
         btn_.clicked.connect(self.CheckTheStockLevel)
-        self.grid.addWidget(btn_add, 1, 1)
+
+
+        self.grid.addWidget(See_orders, 1, 1)
         self.grid.addWidget(btn_, 1, 4)
-        self.grid.addWidget(btn_summary, 1, 2)
+        self.grid.addWidget(Adding_products, 1, 2)
         self.grid.addWidget(btn, 1, 3)
 
     def CheckTheStockLevel(self):
-        print("test")
         resultat = self.db.dowlaod_all()
+
         tableWidget = QTableWidget()
-        tableWidget.setRowCount(len(resultat))
+
+        tableWidget.setRowCount((len(resultat) +1))
         tableWidget.setColumnCount(4)
         label_list = ["Nazwa", "Liczebność", "Jednostka", "Cena"]
         columns = 0
@@ -204,10 +218,24 @@ class Widgets(QWidget):
             name = QTableWidgetItem(items)
             tableWidget.setHorizontalHeaderItem(columns, name)
             columns +=1
-        self.grid.addWidget(tableWidget, 3, 2)
+
+        size_table = tableWidget.size()
+
+        layout = QHBoxLayout()
+        layout.addWidget(tableWidget)
+
+        # self.grid.addLayout(layout, 2, 2)
+        self.grid.addWidget(tableWidget, 2,2)
+        size_mimum = 500
+        self.grid.setColumnMinimumWidth(2, size_mimum)
+        setRowMinimumHeight = (len(resultat) + 1) * 37
+        self.grid.setRowMinimumHeight(2, setRowMinimumHeight)
+        self.config(tableWidget, 23)
+
         row = 1
+        print(len(resultat))
         for items in resultat:
-            print(items)
+            # print(items)
             name = QTableWidgetItem(str(items[1]))
             weight = QTableWidgetItem(str(items[2]))
             unit = QTableWidgetItem(str(items[3]))

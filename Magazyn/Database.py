@@ -29,7 +29,6 @@ class database:
 
     def dowlaod_all(self):
         # self.cursor.fetchone() pojedyńczy wynik
-        print('db')
         tuple__ = tuple()
         resultat = self.cursor.execute(f'SELECT * FROM {self.name_tabel}')
         for item in resultat:
